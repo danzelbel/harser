@@ -109,6 +109,7 @@
 		"glob": "^7.1.6",
 		"mocha": "^7.0.1",
 		"typescript": "^3.7.5",
+		"vsce": "^1.79.5",
 		"vscode-test": "^1.3.0"
 	},
 	"dependencies": {
