@@ -1,0 +1,85 @@
+using System.Net;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using RestSharp;
+using Shouldly;
+
+public sealed class Foo
+{
+    private IRestClient _restClient = new RestClient("{{get-baseurl request.url}}") { CookieContainer = new CookieContainer() };
+
+{{#if (equal response.content.mimeType "application/json")}}
+	{{#if response.content.text}}
+    public async Task<dynamic> {{upper-first (get-action request.url)}}()
+	{{else}}
+    public async Task {{upper-first (get-action request.url)}}()
+	{{/if}}
+{{else}}
+    public async Task<dynamic> {{upper-first (get-action request.url)}}()
+{{/if}}
+    {
+        var req = new RestRequest("{{get-path request.url}}", Method.{{request.method}});
+{{#each request.headers}}
+        req.AddHeader("{{name}}", {{{csharp-escape-string value}}});
+{{/each}}
+{{#each request.queryString}}
+        req.AddQueryParameter("{{name}}", {{{csharp-escape-string value}}});
+{{/each}}
+{{#if request.postData}}
+  {{#if (contains request.postData.mimeType "multipart/form-data")}}
+    {{#each request.postData.params}}
+      {{#if (equal value "(binary)")}}
+        req.AddFile("{{name}}", "{{get-postdata-filename .. this}}", "{{get-postdata-contenttype .. this}}");
+      {{else}}
+        req.AddParameter("{{name}}", {{{csharp-escape-string value}}}, ParameterType.GetOrPost);
+      {{/if}}
+    {{/each}}
+  {{/if}}
+  {{#if (contains request.postData.mimeType "application/json")}}
+	  {{#with (parse-json request.postData.text) as | body |}}
+      {{#if (typeof body "object")}}
+        dynamic body = new JObject();
+        {{#each body}}
+        body.{{@key}} = {{#if (typeof this "string")}}{{{csharp-escape-string this}}}{{else}}{{#if (typeof this "object")}}null{{else}}{{this}}{{/if}}{{/if}};
+        {{/each}}
+      {{else}}
+        var body = {{#if (typeof body "string")}}{{{csharp-escape-string body}}}{{else}}{{body}}{{/if}};
+      {{/if}}
+        req.AddParameter("application/json", JsonConvert.SerializeObject(body), ParameterType.RequestBody);
+		{{/with}}
+  {{/if}}
+	{{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
+{{/if}}
+        var res = await _restClient.ExecuteAsync(req);
+        res.StatusCode.ShouldBe({{#if response.statusText}}HttpStatusCode.{{response.statusText}}{{else}}(HttpStatusCode){{response.status}}{{/if}}, res.Content);
+{{#if (equal response.content.mimeType "application/json")}}
+	{{#if response.content.text}}
+        return JsonConvert.DeserializeObject(res.Content);
+	{{/if}}
+{{else}}
+        return res.Content;
+{{/if}}
+    }
+
+    public async Task Test()
+    {
+{{#if response.content.text}}
+  {{#if (contains response.content.mimeType "application/json")}}
+    {{#with (parse-json response.content.text) as | data |}}
+        {{#if data}}var data = {{/if}}await {{upper-first (get-action ../request.url)}}();
+      {{#if (typeof data "object")}}
+        {{#each data}}
+        (({{csharp-type this}})data.{{@key}}).ShouldBe({{#if (typeof this "string")}}{{{csharp-escape-string this}}}{{else}}{{#if (typeof this "object")}}null{{else}}{{this}}{{/if}}{{/if}});
+        {{/each}}
+      {{else}}
+        (({{csharp-type data}})data).ShouldBe({{#if (typeof data "string")}}{{{csharp-escape-string this}}}{{else}}{{data}}{{/if}});
+      {{/if}}
+    {{/with}}
+  {{/if}}
+	{{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
+{{else}}
+        await {{upper-first (get-action request.url)}}();
+{{/if}}
+    }
+}
