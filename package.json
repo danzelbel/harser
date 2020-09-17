@@ -3,7 +3,7 @@
 	"name": "harser",
 	"displayName": "harser",
 	"description": "Generate code from HAR files",
-	"version": "2020.9.1",
+	"version": "2020.9.2",
 	"publisher": "danzelbel",
 	"author": {
 		"name": "danzelbel"
@@ -32,7 +32,18 @@
 		"viewsWelcome": [
 			{
 				"view": "harser.requestsView",
-				"contents": "[Open a file](command:vscode.window.showOpenDialog) which contains a HAR entry."
+				"contents": "Open a folder containing HAR files.\n[Open Folder](command:vscode.openFolder)\n or [open a file](command:workbench.action.files.openFile) containing HAR entries.",
+				"when": "!editorIsOpen && workbenchState == empty"
+			},
+			{
+				"view": "harser.requestsView",
+				"contents": "[Open a file](command:workbench.action.files.openFile) containing HAR entries.",
+				"when": "!editorIsOpen && workbenchState != empty"
+			},
+			{
+				"view": "harser.requestsView",
+				"contents": "No entries found.",
+				"when": "editorIsOpen"
 			}
 		],
 		"views": {
@@ -61,11 +72,13 @@
 			"view/title": [
 				{
 					"command": "harser.requestsView.all",
-					"when": "view == harser.requestsView"
+					"when": "view == harser.requestsView && editorIsOpen",
+					"group": "navigation"
 				},
 				{
 					"command": "harser.requestsView.xhr",
-					"when": "view == harser.requestsView"
+					"when": "view == harser.requestsView && editorIsOpen",
+					"group": "navigation"
 				}
 			],
 			"view/item/context": [

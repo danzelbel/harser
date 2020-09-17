@@ -99,20 +99,15 @@ export class RequestsView implements vscode.Disposable {
 		this._view = vscode.window.createTreeView("harser.requestsView", { treeDataProvider: this._treeData });
 		this._disposables.push(this._view);
 		this._disposables.push(vscode.workspace.registerTextDocumentContentProvider("harser", this._docProvider));
+		this._disposables.push(vscode.window.onDidChangeActiveTextEditor(this.init, this));
+		this._disposables.push(vscode.commands.registerCommand("harser.requestsView.all", () => this.filter("all"), this));
+		this._disposables.push(vscode.commands.registerCommand("harser.requestsView.xhr", () => this.filter("xhr"), this));
+
 		this._disposables.push(vscode.workspace.onDidChangeConfiguration(e => {
 			if (e.affectsConfiguration("harser.template")) {
 				this._docs.forEach((v, k, m) => m.set(k, true));
 			}
 		}));
-		this._disposables.push(vscode.window.onDidChangeActiveTextEditor(e => {
-			if (e && e.document.languageId === "json") {
-				this.readHar(e.document.getText());
-			} else {
-				items = undefined;
-			}
-		}, this));
-		this._disposables.push(vscode.commands.registerCommand("harser.requestsView.all", () => this.filter("all"), this));
-		this._disposables.push(vscode.commands.registerCommand("harser.requestsView.xhr", () => this.filter("xhr"), this));
 
 		for (const template of Object.values(HbTemplate)) {
 			this._disposables.push(vscode.commands.registerCommand(`harser.requestsView.${template}`, e => this.showTextDocument(e, template), this));
@@ -123,15 +118,29 @@ export class RequestsView implements vscode.Disposable {
 				this._debouncedRefresh();
 			}
 		}));
+
+		this.init(vscode.window.activeTextEditor);
 	}
 
 	get items() {
 		return items ? [...items!.values()] : undefined;
 	}
 
+	init(e: vscode.TextEditor | undefined) {
+		this._view.title = `harser: ${this._resourceType}`
+		if (e && e.document.languageId === "json") {
+			this.readHar(e.document.getText());
+		} else {
+			items = new Map();
+			this._entries = [];
+			this.refresh();
+		}
+	}
+
 	readHar(json: string) {
-		items = new Map();
 		try {
+			items = new Map();
+			this._entries = [];
 			// TODO: FIND A WAY TO VALIDATE JSON WITH HAR SCHEMA
 			const har: Har = JSON.parse(json);
 			this._entries = har.log.entries;
@@ -148,16 +157,18 @@ export class RequestsView implements vscode.Disposable {
 	}
 
 	filter(resourceType: string) {
+		this._view.title = `harser: ${resourceType}`
 		this._resourceType = resourceType;
+		items = new Map();
 		this.setItems();
 		this.refresh();
 	}
 
 	setItems() {
-		this._entries = this._resourceType !== "all"
+		const filtered = this._resourceType !== "all"
 			? this._entries.filter((e: any) => e._resourceType === this._resourceType)
 			: this._entries;
-		this._entries.forEach((e, i) => {
+		filtered.forEach((e, i) => {
 			items!.set(i, new RequestItem(i, e as EntryExt));
 		});
 	}
