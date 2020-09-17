@@ -3,12 +3,8 @@
 	"name": "harser",
 	"displayName": "harser",
 	"description": "Generate code from HAR files",
-	"version": "2020.9.2",
+	"version": "2020.9.3",
 	"icon": "images/icon.png",
-	"galleryBanner": {
-    "color": "#444444",
-    "theme": "dark"
-  },
 	"publisher": "danzelbel",
 	"author": {
 		"name": "danzelbel"
