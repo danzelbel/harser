@@ -73,7 +73,7 @@ public sealed class Foo
         (({{csharp-type this}})data.{{@key}}).ShouldBe({{#if (typeof this "string")}}{{{csharp-escape-string this}}}{{else}}{{#if (typeof this "object")}}null{{else}}{{this}}{{/if}}{{/if}});
         {{/each}}
       {{else}}
-        (({{csharp-type data}})data).ShouldBe({{#if (typeof data "string")}}{{{csharp-escape-string this}}}{{else}}{{data}}{{/if}});
+        (({{csharp-type data}})data).ShouldBe({{#if (typeof data "string")}}{{{csharp-escape-string data}}}{{else}}{{data}}{{/if}});
       {{/if}}
     {{/with}}
   {{/if}}

@@ -7,38 +7,38 @@ import * as path from "path";
 import { flatten } from "./flatten";
 
 export enum HbTemplate {
-	RestSharp = "restsharp.cs"
+	RestSharp = "restsharp.cs",
+	Fetch = "fetch.js"
 }
 
 export class HbSetup implements vscode.Disposable {
 	private _disposables: vscode.Disposable[] = [];
 	private static _templates: { [key: string]: HandlebarsTemplateDelegate<any> } = {};
-	private _debouncedSetHandlebars = debounce(this.setTemplates, 1000);
+	private _debouncedSetTemplates = debounce(this.setTemplates, 1000);
 
-	constructor() {
-		this._disposables.push(vscode.workspace.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration("harser.template")) {
-				this._debouncedSetHandlebars();
-			}
-		}));
-		this.setConfig();
+	async init() {
+		await this.setConfig();
 		this.setTemplates();
 		this.registerHelpers();
+		this._disposables.push(vscode.workspace.onDidChangeConfiguration(e => {
+			if (e.affectsConfiguration("harser.template")) {
+				this._debouncedSetTemplates();
+			}
+		}));
 	}
 
 	static getOutput(template: string, entry: Entry) {
 		return this._templates[template](entry);
 	}
 
-	private setConfig() {
+	private async setConfig() {
 		const cfg = vscode.workspace.getConfiguration("harser.template");
 		for (const template of Object.values(HbTemplate)) {
 			if (!cfg.get(template)) {
-				const value = (fs.readFileSync(path.join(__dirname, "..", `templates/${template}.handlebars`))).toString();
-				cfg.update(template, value, vscode.ConfigurationTarget.Global);
+				const value = (await fs.readFile(path.join(__dirname, "..", `templates/${template}.handlebars`))).toString();
+				await cfg.update(template, value, vscode.ConfigurationTarget.Global);
 			}
 		}
-		return Promise.resolve();
 	}
 
 	private setTemplates() {
@@ -98,6 +98,9 @@ export class HbSetup implements vscode.Disposable {
 				verbatim = "@";
 			}
 			return `${verbatim}${value}`;
+		});
+		Handlebars.registerHelper("js-escape-string", (value: string) => {
+			return JSON.stringify(value);
 		});
 		Handlebars.registerHelper("csharp-type", (value: any) => {
 			switch (typeof value) {

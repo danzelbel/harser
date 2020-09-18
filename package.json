@@ -3,7 +3,7 @@
 	"name": "harser",
 	"displayName": "harser",
 	"description": "Generate code from HAR files",
-	"version": "2020.9.3",
+	"version": "2020.9.4",
 	"icon": "images/icon.png",
 	"publisher": "danzelbel",
 	"author": {
@@ -67,6 +67,10 @@
 			{
 				"command": "harser.requestsView.restsharp.cs",
 				"title": "C# - RestSharp"
+			},
+			{
+				"command": "harser.requestsView.fetch.js",
+				"title": "JavaScript - Fetch"
 			}
 		],
 		"menus": {
@@ -86,6 +90,10 @@
 				{
 					"command": "harser.requestsView.restsharp.cs",
 					"when": "view == harser.requestsView && viewItem == request"
+				},
+				{
+					"command": "harser.requestsView.fetch.js",
+					"when": "view == harser.requestsView && viewItem == request"
 				}
 			]
 		},
@@ -93,6 +101,9 @@
 			"title": "Harser",
 			"properties": {
 				"harser.template.restsharp.cs": {
+					"type": "string"
+				},
+				"harser.template.fetch.js": {
 					"type": "string"
 				}
 			}

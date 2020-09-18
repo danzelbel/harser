@@ -1,0 +1,81 @@
+import fetch from "node-fetch";
+import { URL{{#if request.queryString}}, URLSearchParams{{/if}} } from "url";
+import "chai/register-should";
+
+class Foo {
+  baseUrl = "{{get-baseurl request.url}}";
+
+  async {{lower-first (get-action request.url)}}() {
+    const url = new URL(`${baseUrl}{{get-path request.url}}`);
+{{#if request.queryString}}
+    const params = [];
+  {{#each request.queryString}}
+    params["{{name}}"] = {{{js-escape-string value}}};
+  {{/each}}
+    url.search = new URLSearchParams(params);
+{{/if}}
+{{#if request.headers}}
+    const headers = new Headers();
+  {{#each request.headers}}
+    headers.append("{{name}}", {{{js-escape-string value}}});
+  {{/each}}
+{{/if}}
+{{#if request.postData}}
+  {{#if (contains request.postData.mimeType "multipart/form-data")}}
+    const body = new FormData();
+    {{#each request.postData.params}}
+      {{#if (equal value "(binary)")}}
+    body.append("{{name}}", fileInput.files[{{@index}}], "{{get-postdata-filename .. this}}");
+      {{else}}
+    body.append("{{name}}", {{{js-escape-string value}}});
+      {{/if}}
+    {{/each}}
+  {{/if}}
+  {{#if (contains request.postData.mimeType "application/json")}}
+    {{#with (parse-json request.postData.text) as | body |}}
+      {{#if (typeof body "object")}}
+    const b = {};
+        {{#each body}}
+    b.{{@key}} = {{#if (typeof this "string")}}{{{js-escape-string this}}}{{else}}{{#if (typeof this "object")}}null{{else}}{{this}}{{/if}}{{/if}};
+        {{/each}}
+    const body = JSON.stringify(b);
+      {{else}}
+    const body = {{#if (typeof body "string")}}{{{js-escape-string body}}}{{else}}{{body}}{{/if}};
+      {{/if}}
+    {{/with}}
+  {{/if}}
+  {{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
+{{/if}}
+    const res = await fetch(url, { method: "{{request.method}}"{{#if request.headers}}, headers: headers{{/if}}{{#if request.postData}}, body: body{{/if}} });
+    if (res.status !== {{response.status}}) {
+      throw new Error(await res.text());
+    }
+{{#if (equal response.content.mimeType "application/json")}}
+  {{#if response.content.text}}
+    return await res.json();
+  {{/if}}
+{{else}}
+    return res.text();
+{{/if}}
+  }
+
+  async test() {
+{{#if response.content.text}}
+  {{#if (contains response.content.mimeType "application/json")}}
+    {{#with (parse-json response.content.text) as | data |}}
+    {{#if data}}const data = {{/if}}await {{lower-first (get-action ../request.url)}}();
+      {{#if (typeof data "object")}}
+        {{#each data}}
+    data.{{@key}}.should.equal({{#if (typeof this "string")}}{{{js-escape-string this}}}{{else}}{{#if (typeof this "object")}}null{{else}}{{this}}{{/if}}{{/if}});
+        {{/each}}
+      {{else}}
+    data.should.equal({{#if (typeof data "string")}}{{{js-escape-string data}}}{{else}}{{data}}{{/if}});
+      {{/if}}
+    {{/with}}
+  {{/if}}
+  {{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
+{{else}}
+    await {{lower-first (get-action request.url)}}();
+{{/if}}
+  }
+}
