@@ -118,7 +118,7 @@ export class HbSetup implements vscode.Disposable {
 					return "bool";
 				case "undefined":
 				default:
-					return "object";
+					return "JProperty";
 			}
 		});
 	}
