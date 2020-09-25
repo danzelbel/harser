@@ -12,15 +12,11 @@ Generate code from HAR files
 ## Features
 
 - Generate RestSharp code
+- Generate Fetch code
 
 ## Extension Settings
 
 This extension contributes the following settings:
 
 - `harser.template.restsharp.cs`: The handlebars template to use for RestSharp.
-
-## Release Notes
-
-### 2020.9.1
-
-Initial release of harser extension
+- `harser.template.fetch.js`: The handlebars template to use for Fetch.
