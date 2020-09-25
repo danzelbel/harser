@@ -62,9 +62,9 @@ export class HbSetup implements vscode.Disposable {
 			// TODO REPLACE INVALID CHARACTERS
 			return action;
 		});
-		Handlebars.registerHelper("parse-json", (text: string) => {
+		Handlebars.registerHelper("parse-json", (path: string, text: string) => {
 			const obj = JSON.parse(text);
-			return typeof obj === "object" ? flatten(obj) : obj;
+			return typeof obj === "object" ? flatten(obj, path) : obj;
 		});
 		Handlebars.registerHelper("equal", (left: any, right: any) => {
 			return left === right;

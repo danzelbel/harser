@@ -66,11 +66,11 @@ public sealed class Foo
     {
 {{#if response.content.text}}
   {{#if (contains response.content.mimeType "application/json")}}
-    {{#with (parse-json response.content.text) as | data |}}
+    {{#with (parse-json "data" response.content.text) as | data |}}
         {{#if data}}var data = {{/if}}await {{upper-first (get-action ../request.url)}}();
       {{#if (typeof data "object")}}
         {{#each data}}
-        (({{csharp-type this}})data.{{@key}}).ShouldBe({{#if (typeof this "string")}}{{{csharp-escape-string this}}}{{else}}{{#if (typeof this "object")}}null{{else}}{{this}}{{/if}}{{/if}});
+        (({{csharp-type this}}){{@key}}).ShouldBe({{#if (typeof this "string")}}{{{csharp-escape-string this}}}{{else}}{{#if (typeof this "object")}}null{{else}}{{this}}{{/if}}{{/if}});
         {{/each}}
       {{else}}
         (({{csharp-type data}})data).ShouldBe({{#if (typeof data "string")}}{{{csharp-escape-string data}}}{{else}}{{data}}{{/if}});

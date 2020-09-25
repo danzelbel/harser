@@ -62,11 +62,11 @@ class Foo {
   async test() {
 {{#if response.content.text}}
   {{#if (contains response.content.mimeType "application/json")}}
-    {{#with (parse-json response.content.text) as | data |}}
+    {{#with (parse-json "data" response.content.text) as | data |}}
     {{#if data}}const data = {{/if}}await {{lower-first (get-action ../request.url)}}();
       {{#if (typeof data "object")}}
         {{#each data}}
-    data.{{@key}}.should.equal({{#if (typeof this "string")}}{{{js-escape-string this}}}{{else}}{{#if (typeof this "object")}}null{{else}}{{this}}{{/if}}{{/if}});
+    {{@key}}.should.equal({{#if (typeof this "string")}}{{{js-escape-string this}}}{{else}}{{#if (typeof this "object")}}null{{else}}{{this}}{{/if}}{{/if}});
         {{/each}}
       {{else}}
     data.should.equal({{#if (typeof data "string")}}{{{js-escape-string data}}}{{else}}{{data}}{{/if}});
