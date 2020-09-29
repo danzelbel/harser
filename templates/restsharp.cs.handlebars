@@ -1,4 +1,5 @@
 using System.Net;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -37,17 +38,34 @@ public sealed class Foo
     {{/each}}
   {{/if}}
   {{#if (contains request.postData.mimeType "application/json")}}
-	  {{#with (parse-json request.postData.text) as | body |}}
-      {{#if (typeof body "object")}}
-        dynamic body = new JObject();
-        {{#each body}}
-        body.{{@key}} = {{#if (typeof this "string")}}{{{csharp-escape-string this}}}{{else}}{{#if (typeof this "object")}}null{{else}}{{this}}{{/if}}{{/if}};
-        {{/each}}
-      {{else}}
-        var body = {{#if (typeof body "string")}}{{{csharp-escape-string body}}}{{else}}{{body}}{{/if}};
-      {{/if}}
+		{{#if (is-null (parse-json request.postData.text))}}
+        dynamic body = null;
         req.AddParameter("application/json", JsonConvert.SerializeObject(body), ParameterType.RequestBody);
-		{{/with}}
+		{{else}}
+	  	{{#with (parse-json request.postData.text) as | body |}}
+      	{{#if (typeof body "object")}}
+        dynamic body = {{#if (is-array body)}}new JArray(new int[{{get-length body}}].Select(x => new JObject())){{else}}new JObject(){{/if}};
+        	{{#each (flatten-csharp-body "body" body)}}
+						{{#if (is-null this)}}
+        {{@key}} = null;
+						{{else}}
+							{{#if (is-array this)}}
+        {{@key}} = new JArray(new int[{{get-length this}}].Select(x => new JObject()));
+							{{else}}
+								{{#if (typeof this "object")}}
+        {{@key}} = new JObject();
+								{{else}}
+        {{@key}} = {{#if (typeof this "string")}}{{{csharp-escape-string this}}}{{else}}{{this}}{{/if}};
+								{{/if}}
+							{{/if}}
+						{{/if}}
+        	{{/each}}
+      	{{else}}
+        var body = {{#if (typeof body "string")}}{{{csharp-escape-string body}}}{{else}}{{body}}{{/if}};
+      	{{/if}}
+        req.AddParameter("application/json", JsonConvert.SerializeObject(body), ParameterType.RequestBody);
+			{{/with}}
+		{{/if}}
   {{/if}}
 	{{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
 {{/if}}
@@ -57,6 +75,7 @@ public sealed class Foo
 	{{#if response.content.text}}
         return JsonConvert.DeserializeObject(res.Content);
 	{{/if}}
+{{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
 {{else}}
         return res.Content;
 {{/if}}
@@ -66,18 +85,33 @@ public sealed class Foo
     {
 {{#if response.content.text}}
   {{#if (contains response.content.mimeType "application/json")}}
-    {{#with (parse-json "data" response.content.text) as | data |}}
+		{{#if (is-null (parse-json response.content.text))}}
+        var data = await {{upper-first (get-action request.url)}}();
+        ((JProperty)data).ShouldBe(null);
+		{{else}}
+    	{{#with (parse-json response.content.text) as | data |}}
         {{#if data}}var data = {{/if}}await {{upper-first (get-action ../request.url)}}();
-      {{#if (typeof data "object")}}
-        {{#each data}}
-        (({{csharp-type this}}){{@key}}).ShouldBe({{#if (typeof this "string")}}{{{csharp-escape-string this}}}{{else}}{{#if (typeof this "object")}}null{{else}}{{this}}{{/if}}{{/if}});
-        {{/each}}
-      {{else}}
-        (({{csharp-type data}})data).ShouldBe({{#if (typeof data "string")}}{{{csharp-escape-string data}}}{{else}}{{data}}{{/if}});
-      {{/if}}
-    {{/with}}
+      	{{#if (typeof data "object")}}
+        	{{#each (flatten "data" data)}}
+						{{#if (is-null this)}}
+        ((JProperty){{@key}}).ShouldBe(null);
+						{{else}}
+							{{#if (is-array this)}}
+        ((IEnumerable<dynamic>){{@key}}).Count().ShouldBe({{get-length this}});
+							{{else}}
+								{{#unless (typeof this "object")}}
+        (({{{csharp-type this}}}){{@key}}).ShouldBe({{#if (typeof this "string")}}{{{csharp-escape-string this}}}{{else}}{{this}}{{/if}});
+								{{/unless}}
+							{{/if}}
+						{{/if}}
+        	{{/each}}
+      	{{else}}
+        (({{{csharp-type data}}})data).ShouldBe({{#if (typeof data "string")}}{{{csharp-escape-string data}}}{{else}}{{data}}{{/if}});
+      	{{/if}}
+    	{{/with}}
+		{{/if}}
   {{/if}}
-	{{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
+{{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
 {{else}}
         await {{upper-first (get-action request.url)}}();
 {{/if}}

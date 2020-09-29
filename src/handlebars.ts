@@ -4,7 +4,7 @@ import { Param, Entry } from "har-format";
 import { debounce } from "debounce";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { flatten } from "./flatten";
+import { flatten, flattenCsharpBody } from "./flatten";
 
 export enum HbTemplate {
 	RestSharp = "restsharp.cs",
@@ -62,9 +62,25 @@ export class HbSetup implements vscode.Disposable {
 			// TODO REPLACE INVALID CHARACTERS
 			return action;
 		});
-		Handlebars.registerHelper("parse-json", (path: string, text: string) => {
-			const obj = JSON.parse(text);
-			return typeof obj === "object" ? flatten(obj, path) : obj;
+		Handlebars.registerHelper("parse-json", (text: string) => {
+			return JSON.parse(text);
+		});
+		Handlebars.registerHelper("flatten-csharp-body", (path: string, value: any) => {
+			const flattened = flattenCsharpBody(value, path);
+			return flattened;
+		});
+		Handlebars.registerHelper("flatten", (path: string, value: any) => {
+			const flattened = flatten(value, path);
+			return flattened;
+		});
+		Handlebars.registerHelper("get-length", (value: Array<any>) => {
+			return value.length;
+		});
+		Handlebars.registerHelper("is-array", (value: any) => {
+			return Array.isArray(value);
+		});
+		Handlebars.registerHelper("is-null", (value: any) => {
+			return value === null;
 		});
 		Handlebars.registerHelper("equal", (left: any, right: any) => {
 			return left === right;
@@ -78,7 +94,7 @@ export class HbSetup implements vscode.Disposable {
 		Handlebars.registerHelper("lower-first", (value: string) => {
 			return `${value.charAt(0).toLowerCase()}${value.slice(1)}`;
 		});
-		Handlebars.registerHelper("typeof", (value: string, type: string) => {
+		Handlebars.registerHelper("typeof", (value: any, type: string) => {
 			return typeof (value) === type;
 		});
 		Handlebars.registerHelper("get-postdata-filename", (entry: Entry, param: Param) => {
@@ -92,12 +108,8 @@ export class HbSetup implements vscode.Disposable {
 			return type;
 		});
 		Handlebars.registerHelper("csharp-escape-string", (value: string) => {
-			let verbatim = "";
 			value = JSON.stringify(value);
-			if (value.match(/\\(?!")/)) {
-				verbatim = "@";
-			}
-			return `${verbatim}${value}`;
+			return value;
 		});
 		Handlebars.registerHelper("js-escape-string", (value: string) => {
 			return JSON.stringify(value);
@@ -108,7 +120,7 @@ export class HbSetup implements vscode.Disposable {
 					return "string";
 				case "number":
 					return value.toString().includes(".")
-						? "float"
+						? "double"
 						: value > 4294967295
 							? "long"
 							: "int";

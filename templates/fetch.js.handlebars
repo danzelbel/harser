@@ -32,17 +32,33 @@ class Foo {
     {{/each}}
   {{/if}}
   {{#if (contains request.postData.mimeType "application/json")}}
-    {{#with (parse-json request.postData.text) as | body |}}
-      {{#if (typeof body "object")}}
-    const b = {};
-        {{#each body}}
-    b.{{@key}} = {{#if (typeof this "string")}}{{{js-escape-string this}}}{{else}}{{#if (typeof this "object")}}null{{else}}{{this}}{{/if}}{{/if}};
-        {{/each}}
+		{{#if (is-null (parse-json request.postData.text))}}
+    const body = null;
+		{{else}}
+    	{{#with (parse-json request.postData.text) as | body |}}
+      	{{#if (typeof body "object")}}
+    const b = {{#if (is-array body)}}[]{{else}}{}{{/if}};
+        	{{#each (flatten "b" body)}}
+						{{#if (is-null this)}}
+    {{@key}} = null;
+						{{else}}
+							{{#if (is-array this)}}
+    {{@key}} = [];
+							{{else}}
+								{{#if (typeof this "object")}}
+    {{@key}} = {};
+								{{else}}
+    {{@key}} = {{#if (typeof this "string")}}{{{js-escape-string this}}}{{else}}{{this}}{{/if}};
+								{{/if}}
+							{{/if}}
+						{{/if}}
+        	{{/each}}
     const body = JSON.stringify(b);
-      {{else}}
+      	{{else}}
     const body = {{#if (typeof body "string")}}{{{js-escape-string body}}}{{else}}{{body}}{{/if}};
-      {{/if}}
-    {{/with}}
+      	{{/if}}
+    	{{/with}}
+		{{/if}}
   {{/if}}
   {{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
 {{/if}}
@@ -54,6 +70,7 @@ class Foo {
   {{#if response.content.text}}
     return await res.json();
   {{/if}}
+{{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
 {{else}}
     return res.text();
 {{/if}}
@@ -62,18 +79,33 @@ class Foo {
   async test() {
 {{#if response.content.text}}
   {{#if (contains response.content.mimeType "application/json")}}
-    {{#with (parse-json "data" response.content.text) as | data |}}
+		{{#if (is-null (parse-json response.content.text))}}
+    const data = await {{lower-first (get-action request.url)}}();
+    data.should.equal(null);
+		{{else}}
+    	{{#with (parse-json response.content.text) as | data |}}
     {{#if data}}const data = {{/if}}await {{lower-first (get-action ../request.url)}}();
-      {{#if (typeof data "object")}}
-        {{#each data}}
-    {{@key}}.should.equal({{#if (typeof this "string")}}{{{js-escape-string this}}}{{else}}{{#if (typeof this "object")}}null{{else}}{{this}}{{/if}}{{/if}});
-        {{/each}}
-      {{else}}
+      	{{#if (typeof data "object")}}
+        	{{#each (flatten "data" data)}}
+						{{#if (is-null this)}}
+    {{@key}}.should.equal(null);
+						{{else}}
+							{{#if (is-array this)}}
+    {{@key}}.length.should.equal({{get-length this}});
+							{{else}}
+								{{#unless (typeof this "object")}}
+    {{@key}}.should.equal({{#if (typeof this "string")}}{{{js-escape-string this}}}{{else}}{{this}}{{/if}});
+								{{/unless}}
+							{{/if}}
+						{{/if}}
+        	{{/each}}
+      	{{else}}
     data.should.equal({{#if (typeof data "string")}}{{{js-escape-string data}}}{{else}}{{data}}{{/if}});
-      {{/if}}
-    {{/with}}
+      	{{/if}}
+    	{{/with}}
+		{{/if}}
   {{/if}}
-  {{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
+{{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
 {{else}}
     await {{lower-first (get-action request.url)}}();
 {{/if}}
