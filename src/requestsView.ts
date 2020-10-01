@@ -142,7 +142,7 @@ export class RequestsView implements vscode.Disposable {
 			await this.hbSetup.init();
 		}
 
-		this._view.title = `harser: ${this._resourceType}`
+		this._view.title = `harser: ${this._resourceType}`;
 		if (e && e.document.languageId === "json") {
 			this.readHar(e.document.getText());
 		} else {
@@ -174,7 +174,7 @@ export class RequestsView implements vscode.Disposable {
 	}
 
 	filter(resourceType: string) {
-		this._view.title = `harser: ${resourceType}`
+		this._view.title = `harser: ${resourceType}`;
 		this._resourceType = resourceType;
 		items = new Map();
 		this.setItems();
