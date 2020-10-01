@@ -2,8 +2,8 @@ import * as vscode from "vscode";
 import * as assert from "assert";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { RequestsView } from "../../requestsView";
-import { HbSetup, HbTemplate } from "../../handlebars";
+import { RequestDocumentContentProvider, RequestsView } from "../../requestsView";
+import { HbTemplate } from "../../handlebars";
 
 const testdataDir = path.resolve(__dirname, "..", "..", "..", "testdata", "generate");
 let dirs = fs.readdirSync(testdataDir, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name);
@@ -53,7 +53,6 @@ describe(`Given an entry with ${scenario.replace(/-/g, " ")}`, () => {
 			requestsView = new RequestsView();
 			await requestsView.init(undefined);
 		}
-		await vscode.commands.executeCommand("workbench.action.closeAllEditors");
 		await vscode.window.showTextDocument(vscode.Uri.file(`${path.resolve(testdataDir, scenario, "log.har")}`));
 	});
 
@@ -77,8 +76,6 @@ describe(`Given an entry with ${scenario.replace(/-/g, " ")}`, () => {
 	});
 });
 
-let hbSetup: HbSetup;
-
 dirs.slice(1).forEach(scenario => {
 
 	describe(`Given an entry with ${scenario.replace(/-/g, " ")}`, () => {
@@ -86,10 +83,6 @@ dirs.slice(1).forEach(scenario => {
 			if (!requestsView) {
 				requestsView = new RequestsView();
 				await requestsView.init(undefined);
-			}
-			if (!hbSetup) {
-				hbSetup = new HbSetup();
-				await hbSetup.init();
 			}
 			const json = (await fs.readFile(path.resolve(testdataDir, scenario, "log.har"))).toString();
 			requestsView.readHar(json);
@@ -99,7 +92,9 @@ dirs.slice(1).forEach(scenario => {
 
 			context(`When the user generates a ${template} file`, () => {
 				it("Then the code is generated", async () => {
-					const actual = HbSetup.getOutput(template, requestsView.items![0].entry);
+					const item = requestsView.items![0];
+					const docProvider = new RequestDocumentContentProvider();
+					const actual = docProvider.provideTextDocumentContent(item.resourceUri!.with({ path: `${item.id}/${item.label}.${template}` }));
 					// console.log(actual);
 					const expected = (await fs.readFile(path.resolve(testdataDir, scenario, template))).toString();
 					assert.strictEqual(actual, expected);
@@ -108,7 +103,6 @@ dirs.slice(1).forEach(scenario => {
 		}
 
 		after(() => {
-			hbSetup.dispose();
 			requestsView.dispose();
 		});
 	});

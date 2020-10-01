@@ -65,14 +65,20 @@ class RequestsDataProvider implements vscode.TreeDataProvider<RequestItem>, vsco
 	}
 }
 
-class RequestDocumentContentProvider implements vscode.TextDocumentContentProvider, vscode.Disposable {
+export class RequestDocumentContentProvider implements vscode.TextDocumentContentProvider, vscode.Disposable {
 	private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
 	readonly onDidChange = this._onDidChange.event;
+	requestHeaderPresetNum: number = 0;
 
-	provideTextDocumentContent(uri: vscode.Uri): vscode.ProviderResult<string> {
+	provideTextDocumentContent(uri: vscode.Uri): string {
 		const template = uri.path.substring(uri.path.indexOf(".") + 1, uri.path.length);
 		const idx = parseInt(path.dirname(uri.path));
-		const entry = items!.get(idx)!.entry;
+		let entry = items!.get(idx)!.entry;
+		if (this.requestHeaderPresetNum !== 0) {
+			const preset = vscode.workspace.getConfiguration("harser.requestHeaders").get<string[]>(`preset.${this.requestHeaderPresetNum}`);
+			entry = JSON.parse(JSON.stringify(entry));
+			entry.request.headers = entry.request.headers.filter(h => preset?.includes(h.name));
+		}
 		return HbSetup.getOutput(template, entry);
 	}
 
@@ -91,26 +97,27 @@ export class RequestsView implements vscode.Disposable {
 	private _view: vscode.TreeView<RequestItem>;
 	private _docProvider = new RequestDocumentContentProvider();
 	private _debouncedRefresh = debounce(this.refresh, 250);
-	private _docs: Map<string, boolean> = new Map<string, boolean>();
+	private _docs: Set<string> = new Set<string>();
 	private _entries: Entry[] = [];
 	private _resourceType: string = "all";
+	private hbSetup: HbSetup;
 
 	constructor() {
 		this._view = vscode.window.createTreeView("harser.requestsView", { treeDataProvider: this._treeData });
 		this._disposables.push(this._view);
 		this._disposables.push(vscode.workspace.registerTextDocumentContentProvider("harser", this._docProvider));
-		this._disposables.push(vscode.window.onDidChangeActiveTextEditor(this.init, this));
+		this._disposables.push(vscode.window.onDidChangeActiveTextEditor(async e => await this.init(e), this));
 		this._disposables.push(vscode.commands.registerCommand("harser.requestsView.all", () => this.filter("all"), this));
 		this._disposables.push(vscode.commands.registerCommand("harser.requestsView.xhr", () => this.filter("xhr"), this));
 
 		this._disposables.push(vscode.workspace.onDidChangeConfiguration(e => {
 			if (e.affectsConfiguration("harser.template")) {
-				this._docs.forEach((v, k, m) => m.set(k, true));
+				this._docs = new Set<string>();
 			}
 		}));
 
 		for (const template of Object.values(HbTemplate)) {
-			this._disposables.push(vscode.commands.registerCommand(`harser.requestsView.${template}`, e => this.showTextDocument(e, template), this));
+			this._disposables.push(vscode.commands.registerCommand(`harser.requestsView.${template}`, async e => await this.showTextDocument(e, template), this));
 		}
 
 		this._disposables.push(vscode.workspace.onDidChangeTextDocument(e => {
@@ -119,14 +126,22 @@ export class RequestsView implements vscode.Disposable {
 			}
 		}));
 
-		this.init(vscode.window.activeTextEditor);
+		for (let i = 0; i <= 3; i++) {
+			this._disposables.push(vscode.commands.registerCommand(`harser.requestHeaders.preset.${i}`, () => this.applyHeaderPreset(i), this));
+		}
 	}
 
 	get items() {
 		return items ? [...items!.values()] : undefined;
 	}
 
-	init(e: vscode.TextEditor | undefined) {
+	async init(e: vscode.TextEditor | undefined): Promise<void> {
+		if (!this.hbSetup) {
+			this.hbSetup = new HbSetup();
+			this._disposables.push(this.hbSetup);
+			await this.hbSetup.init();
+		}
+
 		this._view.title = `harser: ${this._resourceType}`
 		if (e && e.document.languageId === "json") {
 			this.readHar(e.document.getText());
@@ -135,6 +150,8 @@ export class RequestsView implements vscode.Disposable {
 			this._entries = [];
 			this.refresh();
 		}
+
+		return Promise.resolve();
 	}
 
 	readHar(json: string) {
@@ -149,10 +166,10 @@ export class RequestsView implements vscode.Disposable {
 			// DO NOTHING
 		}
 		this.refresh();
-		this._docs.forEach((v, k, m) => m.set(k, true));
+		this._docs = new Set<string>();
 	}
 
-	refresh(): void {
+	refresh() {
 		this._treeData.refresh();
 	}
 
@@ -176,15 +193,20 @@ export class RequestsView implements vscode.Disposable {
 	async showTextDocument(element: RequestItem, template: HbTemplate): Promise<void> {
 		const uri = element.resourceUri!.with({ path: `${element.id}/${element.label}.${template}` });
 		if (!this._docs.has(uri.path)) {
-			this._docs.set(uri.path, false);
-		} else if (this._docs.get(uri.path)) {
 			this._docProvider.update(uri);
-			this._docs.set(uri.path, false);
+			this._docs.add(uri.path);
 		}
 		await vscode.window.showTextDocument(uri, { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true });
 	}
 
-	dispose(): void {
+	applyHeaderPreset(num: number) {
+		this._docs = new Set<string>();
+		const preset = num === 0 ? "" : ` | preset ${num}`;
+		this._view.title = `harser: ${this._resourceType}${preset}`;
+		this._docProvider.requestHeaderPresetNum = num;
+	}
+
+	dispose() {
 		this._disposables.forEach(d => d.dispose());
 	}
 }

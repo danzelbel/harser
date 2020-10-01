@@ -3,7 +3,7 @@
 	"name": "harser",
 	"displayName": "harser",
 	"description": "Generate code from HAR files",
-	"version": "2020.9.4",
+	"version": "2020.9.5",
 	"icon": "images/icon.png",
 	"publisher": "danzelbel",
 	"author": {
@@ -71,6 +71,22 @@
 			{
 				"command": "harser.requestsView.fetch.js",
 				"title": "JavaScript - Fetch"
+			},
+			{
+				"command": "harser.requestHeaders.preset.0",
+				"title": "Preset: None"
+			},
+			{
+				"command": "harser.requestHeaders.preset.1",
+				"title": "Preset: 1"
+			},
+			{
+				"command": "harser.requestHeaders.preset.2",
+				"title": "Preset: 2"
+			},
+			{
+				"command": "harser.requestHeaders.preset.3",
+				"title": "Preset: 3"
 			}
 		],
 		"menus": {
@@ -84,6 +100,26 @@
 					"command": "harser.requestsView.xhr",
 					"when": "view == harser.requestsView && editorIsOpen",
 					"group": "navigation"
+				},
+				{
+					"command": "harser.requestHeaders.preset.0",
+					"when": "view == harser.requestsView",
+					"group": "preset@0"
+				},
+				{
+					"command": "harser.requestHeaders.preset.1",
+					"when": "view == harser.requestsView",
+					"group": "preset@1"
+				},
+				{
+					"command": "harser.requestHeaders.preset.2",
+					"when": "view == harser.requestsView",
+					"group": "preset@2"
+				},
+				{
+					"command": "harser.requestHeaders.preset.3",
+					"when": "view == harser.requestsView",
+					"group": "preset@3"
 				}
 			],
 			"view/item/context": [
@@ -100,6 +136,18 @@
 		"configuration": {
 			"title": "Harser",
 			"properties": {
+				"harser.requestHeaders.preset.1": {
+					"type": "array",
+					"default": []
+				},
+				"harser.requestHeaders.preset.2": {
+					"type": "array",
+					"default": []
+				},
+				"harser.requestHeaders.preset.3": {
+					"type": "array",
+					"default": []
+				},
 				"harser.template.restsharp.cs": {
 					"type": "string"
 				},

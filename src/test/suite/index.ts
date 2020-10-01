@@ -18,6 +18,13 @@ export function run(): Promise<void> {
 				return e(err);
 			}
 
+			/*********************************** DEBUG ***********************************/
+			// files = files.filter(f => [
+			// 	"suite/generate.test.js",
+			// 	"suite/preset.test.js",
+			// ].includes(f));
+			/*****************************************************************************/
+
 			// Add files to the test suite
 			files.forEach(f => mocha.addFile(path.resolve(testsRoot, f)));
 

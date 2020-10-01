@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"harser.requestHeaders.preset.1": [
+			"datetime"
+		],
+		"harser.requestHeaders.preset.2": [
+			"datetime",
+			"text"
+		],
+		"harser.requestHeaders.preset.3": [
+			"datetime",
+			"text",
+			"doublequotes"
+		]
+	}
+}
