@@ -3,7 +3,7 @@
 	"name": "harser",
 	"displayName": "harser",
 	"description": "Generate code from HAR files",
-	"version": "2020.9.5",
+	"version": "2020.10.1",
 	"icon": "images/icon.png",
 	"publisher": "danzelbel",
 	"author": {
