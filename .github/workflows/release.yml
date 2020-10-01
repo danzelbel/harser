@@ -25,9 +25,11 @@ jobs:
         run: npm test
 
     - name: Package the VSIX
+      if: success()
       run: npm run package
 
     - name: Upload VSIX
+      if: success()
       uses: actions/upload-artifact@v1
       with:
         name: harser-release.vsix
@@ -35,6 +37,7 @@ jobs:
 
     - name: Get date
       id: date
+      if: success()
       run: echo ::set-output name=YYYYmm::$(date +%Y.%-m)
 
     - name: Create release
@@ -48,6 +51,7 @@ jobs:
         release_name: ${{steps.date.outputs.YYYYmm}}.${{github.run_id}}
 
     - name: Upload Release Asset
+      if: success()
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
