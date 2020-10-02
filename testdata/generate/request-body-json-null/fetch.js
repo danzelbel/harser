@@ -1,5 +1,4 @@
 import fetch from "node-fetch";
-import { URL } from "url";
 import "chai/register-should";
 
 class Foo {

@@ -1,5 +1,4 @@
 import fetch from "node-fetch";
-import { URL{{#if request.queryString}}, URLSearchParams{{/if}} } from "url";
 import "chai/register-should";
 
 class Foo {
@@ -66,7 +65,7 @@ class Foo {
     if (res.status !== {{response.status}}) {
       throw new Error(await res.text());
     }
-{{#if (equal response.content.mimeType "application/json")}}
+{{#if (contains response.content.mimeType "application/json")}}
   {{#if response.content.text}}
     return await res.json();
   {{/if}}
