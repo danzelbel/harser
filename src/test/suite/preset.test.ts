@@ -6,10 +6,17 @@ import { RequestDocumentContentProvider, RequestsView } from "../../requestsView
 import { HbTemplate } from "../../handlebars";
 
 const testdataDir = path.resolve(__dirname, "..", "..", "..", "testdata", "preset", "request-headers");
-const templates = [
-	HbTemplate.RestSharp,
-	HbTemplate.Fetch
-];
+let templates = Object.values(HbTemplate);
+
+/*********************************** DEBUG ***********************************/
+// templates = [
+// 	HbTemplate.RestSharp,
+// 	HbTemplate.Fetch,
+// 	HbTemplate.GithubActionsJS,
+// 	HbTemplate.GithubActionsREADME,
+// 	HbTemplate.GithubActionsYML
+// ];
+/*****************************************************************************/
 
 let requestsView: RequestsView;
 

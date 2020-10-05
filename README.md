@@ -13,6 +13,7 @@ Generate code from HAR files
 
 - Generate C# - RestSharp code
 - Generate JavaScript - Fetch code
+- Generate Github Actions code
 - Request Header Presets
 
 ## Extension Settings
@@ -22,6 +23,9 @@ This extension contributes the following settings:
 Required
 - `harser.template.restsharp.cs`: The handlebars template to use for RestSharp.
 - `harser.template.fetch.js`: The handlebars template to use for Fetch.
+- `harser.template.githubActions.js`: The handlebars template to use for Github Actions JavaScript.
+- `harser.template.githubActions.yml`: The handlebars template to use for Github Actions YAML.
+- `harser.template.githubActions.README.md`: The handlebars template to use for Github Actions README.
 
 Optional
 - `harser.requestHeaders.preset.1`: The handlebars template to use for header preset 1.

@@ -39,7 +39,10 @@ let templates = Object.values(HbTemplate);
 
 // templates = [
 // 	HbTemplate.RestSharp,
-// 	HbTemplate.Fetch
+// 	HbTemplate.Fetch,
+// 	HbTemplate.GithubActionsJS,
+// 	HbTemplate.GithubActionsREADME,
+// 	HbTemplate.GithubActionsYML
 // ];
 /*****************************************************************************/
 

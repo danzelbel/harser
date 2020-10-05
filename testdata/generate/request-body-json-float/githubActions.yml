@@ -1,0 +1,9 @@
+name: "harser"
+description: ""
+inputs:
+  body:
+    description: ""
+    required: false
+runs:
+  using: "node12"
+  main: "index.js"

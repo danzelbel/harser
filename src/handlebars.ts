@@ -8,7 +8,10 @@ import { flatten, flattenCsharpBody } from "./flatten";
 
 export enum HbTemplate {
 	RestSharp = "restsharp.cs",
-	Fetch = "fetch.js"
+	Fetch = "fetch.js",
+	GithubActionsJS = "githubActions.js",
+	GithubActionsREADME = "githubActions.README.md",
+	GithubActionsYML = "githubActions.yml"
 }
 
 export class HbSetup implements vscode.Disposable {
@@ -96,6 +99,15 @@ export class HbSetup implements vscode.Disposable {
 		});
 		Handlebars.registerHelper("typeof", (value: any, type: string) => {
 			return typeof (value) === type;
+		});
+		Handlebars.registerHelper("any", (...values: any[]) => {
+			let any = false;
+			values.slice(0, values.length - 1).forEach(v => {
+				if ((v && !Array.isArray(v)) || (Array.isArray(v) && v.length > 0)) {
+					any = true;
+				}
+			});
+			return any;
 		});
 		Handlebars.registerHelper("get-postdata-filename", (entry: Entry, param: Param) => {
 			const line = entry.request.postData?.text.split("------").find(p => p.includes(param.name))?.split("\n").find(p => p.includes(param.name));

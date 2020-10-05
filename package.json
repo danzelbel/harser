@@ -73,6 +73,18 @@
 				"title": "JavaScript - Fetch"
 			},
 			{
+				"command": "harser.requestsView.githubActions.js",
+				"title": "Github Actions - action.js"
+			},
+			{
+				"command": "harser.requestsView.githubActions.yml",
+				"title": "Github Actions - action.yml"
+			},
+			{
+				"command": "harser.requestsView.githubActions.README.md",
+				"title": "Github Actions - README.md"
+			},
+			{
 				"command": "harser.requestHeaders.preset.0",
 				"title": "Preset: None"
 			},
@@ -125,11 +137,28 @@
 			"view/item/context": [
 				{
 					"command": "harser.requestsView.restsharp.cs",
-					"when": "view == harser.requestsView && viewItem == request"
+					"when": "view == harser.requestsView && viewItem == request",
+					"group": "0_uncategorized"
 				},
 				{
 					"command": "harser.requestsView.fetch.js",
-					"when": "view == harser.requestsView && viewItem == request"
+					"when": "view == harser.requestsView && viewItem == request",
+					"group": "0_uncategorized"
+				},
+				{
+					"command": "harser.requestsView.githubActions.js",
+					"when": "view == harser.requestsView && viewItem == request",
+					"group": "github-actions"
+				},
+				{
+					"command": "harser.requestsView.githubActions.yml",
+					"when": "view == harser.requestsView && viewItem == request",
+					"group": "github-actions"
+				},
+				{
+					"command": "harser.requestsView.githubActions.README.md",
+					"when": "view == harser.requestsView && viewItem == request",
+					"group": "github-actions"
 				}
 			]
 		},
@@ -152,6 +181,15 @@
 					"type": "string"
 				},
 				"harser.template.fetch.js": {
+					"type": "string"
+				},
+				"harser.template.githubActions.js": {
+					"type": "string"
+				},
+				"harser.template.githubActions.yml": {
+					"type": "string"
+				},
+				"harser.template.githubActions.README.md": {
 					"type": "string"
 				}
 			}

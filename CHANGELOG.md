@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 -
+
+## [2020.10.1] - 2020-10-2
+### Added
+- "Github Actions" generator
+- Step conditions in release workflow
+### Changed
+- Fetch tests
+### Fixed
+- eslint warnings
+- Failing tests when ran via build and release workflows
+
 ## [2020.9.5] - 2020-10-1
 ### Added
 - Request header presets

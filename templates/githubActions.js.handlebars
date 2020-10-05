@@ -1,0 +1,64 @@
+const core = require("@actions/core");
+const fetch = require("node-fetch");
+
+const baseUrl = "{{get-baseurl request.url}}";
+
+async function {{lower-first (get-action request.url)}}() {
+  const url = new URL(`${baseUrl}{{get-path request.url}}`);
+{{#if request.queryString}}
+  const params = [];
+  {{#each request.queryString}}
+  params["{{name}}"] = core.getInput("{{name}}");
+  {{/each}}
+  url.search = new URLSearchParams(params);
+{{/if}}
+{{#if request.headers}}
+  const headers = new Headers();
+  {{#each request.headers}}
+  headers.append("{{name}}", core.getInput("{{name}}"));
+  {{/each}}
+{{/if}}
+{{#if request.postData}}
+  {{#if (contains request.postData.mimeType "multipart/form-data")}}
+  const body = new FormData();
+    {{#each request.postData.params}}
+      {{#if (equal value "(binary)")}}
+  body.append("{{name}}", fileInput.files[{{@index}}], core.getInput("{{name}}"));
+      {{else}}
+  body.append("{{name}}", core.getInput("{{name}}"));
+      {{/if}}
+    {{/each}}
+  {{/if}}
+  {{#if (contains request.postData.mimeType "application/json")}}
+  const body = core.getInput("body");
+  {{/if}}
+  {{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
+{{/if}}
+  const res = await fetch(url, { method: "{{request.method}}"{{#if request.headers}}, headers: headers{{/if}}{{#if request.postData}}, body: body{{/if}} });
+  if (res.status !== {{response.status}}) {
+    throw new Error(await res.text());
+  }
+{{#if (contains response.content.mimeType "application/json")}}
+  {{#if response.content.text}}
+  return await res.json();
+  {{/if}}
+{{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
+{{else}}
+  return res.text();
+{{/if}}
+}
+
+async function exec() {
+  try {
+{{#if response.content.text}}
+    const data = await {{lower-first (get-action request.url)}}();
+    core.setOutput("data", data);
+{{else}}
+    await {{lower-first (get-action request.url)}}();
+{{/if}}
+  } catch (err) {
+    core.setFailed(err.message);
+  }
+}
+
+exec();

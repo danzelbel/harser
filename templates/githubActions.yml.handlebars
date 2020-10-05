@@ -1,0 +1,42 @@
+name: "{{get-action request.url}}"
+description: ""
+{{#if (any request.queryString request.headers request.postData)}}
+inputs:
+{{/if}}
+{{#if request.queryString}}
+  {{#each request.queryString}}
+  {{name}}:
+    description: ""
+    required: false
+  {{/each}}
+{{/if}}
+{{#if request.headers}}
+  {{#each request.headers}}
+  {{name}}:
+    description: ""
+    required: false
+  {{/each}}
+{{/if}}
+{{#if request.postData}}
+  {{#if (contains request.postData.mimeType "multipart/form-data")}}
+    {{#each request.postData.params}}
+  {{name}}:
+    description: ""
+    required: false
+    {{/each}}
+  {{/if}}
+  {{#if (contains request.postData.mimeType "application/json")}}
+  body:
+    description: ""
+    required: false
+  {{/if}}
+  {{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
+{{/if}}
+{{#if response.content.text}}
+outputs:
+  data:
+    description: ""
+{{/if}}
+runs:
+  using: "node12"
+  main: "index.js"

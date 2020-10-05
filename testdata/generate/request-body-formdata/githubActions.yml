@@ -1,0 +1,21 @@
+name: "harser"
+description: ""
+inputs:
+  uploadFile:
+    description: ""
+    required: false
+  datetime:
+    description: ""
+    required: false
+  text:
+    description: ""
+    required: false
+  doublequotes:
+    description: ""
+    required: false
+  path:
+    description: ""
+    required: false
+runs:
+  using: "node12"
+  main: "index.js"

@@ -1,0 +1,75 @@
+# {{get-action request.url}}
+
+```
+{{request.method}} {{request.url}}
+```
+
+## Usage
+
+```yaml
+- uses: {project_key}/{repository_name}@v1.0.0
+{{#if (any request.queryString request.headers request.postData)}}
+  with:
+{{/if}}
+{{#if request.queryString}}
+  {{#each request.queryString}}
+    {{name}}:
+      description: ""
+      required: false
+  {{/each}}
+{{/if}}
+{{#if request.headers}}
+  {{#each request.headers}}
+    {{name}}:
+      description: ""
+      required: false
+  {{/each}}
+{{/if}}
+{{#if request.postData}}
+  {{#if (contains request.postData.mimeType "multipart/form-data")}}
+    {{#each request.postData.params}}
+    {{name}}:
+      description: ""
+      required: false
+    {{/each}}
+  {{/if}}
+  {{#if (contains request.postData.mimeType "application/json")}}
+    body:
+      description: ""
+      required: false
+  {{/if}}
+  {{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
+{{/if}}
+```
+{{#if (any request.queryString request.headers request.postData)}}
+
+## Inputs
+
+{{/if}}
+{{#if request.queryString}}
+  {{#each request.queryString}}
+- `{{name}}`: {description}.
+  {{/each}}
+{{/if}}
+{{#if request.headers}}
+  {{#each request.headers}}
+- `{{name}}`: {description}.
+  {{/each}}
+{{/if}}
+{{#if request.postData}}
+  {{#if (contains request.postData.mimeType "multipart/form-data")}}
+    {{#each request.postData.params}}
+- `{{name}}`: {description}.
+    {{/each}}
+  {{/if}}
+  {{#if (contains request.postData.mimeType "application/json")}}
+- `body`: {description}.
+  {{/if}}
+  {{!-- ADD OTHER MIMETYPES HERE WHEN NEEDED --}}
+{{/if}}
+{{#if response.content.text}}
+
+## Outputs
+
+- `data`: {description}.
+{{/if}}
