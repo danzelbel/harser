@@ -65,13 +65,16 @@ class RequestsDataProvider implements vscode.TreeDataProvider<RequestItem>, vsco
 	}
 }
 
+const templates = Object.values(HbTemplate).join("|");
+const templatesRegExp = new RegExp(`(?!\\.)(${templates})$`);
+
 export class RequestDocumentContentProvider implements vscode.TextDocumentContentProvider, vscode.Disposable {
 	private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
 	readonly onDidChange = this._onDidChange.event;
 	requestHeaderPresetNum: number = 0;
 
 	provideTextDocumentContent(uri: vscode.Uri): string {
-		const template = uri.path.substring(uri.path.indexOf(".") + 1, uri.path.length);
+		const template = uri.path.match(templatesRegExp)![0];
 		const idx = parseInt(path.dirname(uri.path));
 		let entry = items!.get(idx)!.entry;
 		if (this.requestHeaderPresetNum !== 0) {
