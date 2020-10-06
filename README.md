@@ -28,6 +28,6 @@ Required
 - `harser.template.githubActions.README.md`: The handlebars template to use for Github Actions README.
 
 Optional
-- `harser.requestHeaders.preset.1`: The handlebars template to use for header preset 1.
-- `harser.requestHeaders.preset.2`: The handlebars template to use for header preset 2.
-- `harser.requestHeaders.preset.3`: The handlebars template to use for header preset 3.
+- `harser.requestHeaders.preset.1`: The list of names to filter the request headers.
+- `harser.requestHeaders.preset.2`: The list of names to filter the request headers.
+- `harser.requestHeaders.preset.3`: The list of names to filter the request headers.
