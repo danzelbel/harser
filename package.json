@@ -1,9 +1,8 @@
 {
-	"preview": true,
 	"name": "harser",
 	"displayName": "harser",
 	"description": "Generate code from HAR files",
-	"version": "2020.10.1",
+	"version": "2020.10.2",
 	"icon": "images/icon.png",
 	"publisher": "danzelbel",
 	"author": {
@@ -22,6 +21,8 @@
 	"keywords": [
 		"har",
 		"restsharp",
+		"fetch",
+		"github actions",
 		"extension"
 	],
 	"license": "MIT",
