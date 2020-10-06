@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Preview gif in README
 ### Fixed
+- Missing header preset title when losing focus from har file
 - Updated parsing of template in uri to allow valid templates only
 
 ## [2020.10.1] - 2020-10-2

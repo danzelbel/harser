@@ -103,6 +103,7 @@ export class RequestsView implements vscode.Disposable {
 	private _docs: Set<string> = new Set<string>();
 	private _entries: Entry[] = [];
 	private _resourceType: string = "all";
+	private _preset: string = "";
 	private hbSetup: HbSetup;
 
 	constructor() {
@@ -145,7 +146,7 @@ export class RequestsView implements vscode.Disposable {
 			await this.hbSetup.init();
 		}
 
-		this._view.title = `harser: ${this._resourceType}`;
+		this._view.title = `harser: ${this._resourceType}${this._preset}`;
 		if (e && e.document.languageId === "json") {
 			this.readHar(e.document.getText());
 		} else {
@@ -177,7 +178,7 @@ export class RequestsView implements vscode.Disposable {
 	}
 
 	filter(resourceType: string) {
-		this._view.title = `harser: ${resourceType}`;
+		this._view.title = `harser: ${resourceType}${this._preset}`;
 		this._resourceType = resourceType;
 		items = new Map();
 		this.setItems();
@@ -204,8 +205,8 @@ export class RequestsView implements vscode.Disposable {
 
 	applyHeaderPreset(num: number) {
 		this._docs = new Set<string>();
-		const preset = num === 0 ? "" : ` | preset ${num}`;
-		this._view.title = `harser: ${this._resourceType}${preset}`;
+		this._preset = num === 0 ? "" : ` | preset ${num}`;
+		this._view.title = `harser: ${this._resourceType}${this._preset}`;
 		this._docProvider.requestHeaderPresetNum = num;
 	}
 
