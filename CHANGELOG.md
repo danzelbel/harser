@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -
 
 ## [2020.10.2] - 2020-10-6
+### Added
+- Preview gif in README
 ### Fixed
 - Updated parsing of template in uri to allow valid templates only
 
